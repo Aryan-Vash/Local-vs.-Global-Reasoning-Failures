@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hypothetical Dataset Split — All 25,433 Questions</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #000000;
+    --surface: #111111;
+    --surface2: #1a1a1a;
+    --border: #2a2a2a;
+    --text: #e4e6f0;
+    --text2: #9498ae;
+    --accent1: #6c63ff;
+    --accent2: #00d4aa;
+    --accent3: #ff6b8a;
+    --accent4: #ffd166;
+    --blue: #4ea8de;
+    --green: #00d4aa;
+    --pink: #ff6b8a;
+    --orange: #f59e42;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 2rem;
+    min-height: 100vh;
+  }
+  .header { text-align: center; margin-bottom: 2rem; }
+  .header h1 {
+    font-size: 2.2rem; font-weight: 800;
+    background: linear-gradient(135deg, var(--orange), var(--accent3));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: .5rem;
+  }
+  .header p { color: var(--text2); font-size: 1rem; }
+
+  .hypo-badge {
+    display: inline-flex; align-items: center; gap: .5rem;
+    background: rgba(245,158,66,.12); border: 1px solid rgba(245,158,66,.35);
+    border-radius: 24px; padding: .5rem 1.2rem;
+    font-size: .85rem; color: var(--orange); margin-bottom: 2rem;
+  }
+  .hypo-badge::before { content: '⚠'; font-size: 1.1rem; }
+
+  .summary-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.2rem; margin-bottom: 3rem;
+  }
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 1.5rem; text-align: center;
+    transition: transform .2s;
+  }
+  .card:hover { transform: translateY(-4px); }
+  .card .number { font-size: 2.4rem; font-weight: 800; margin-bottom: .3rem; }
+  .card .label { color: var(--text2); font-size: .85rem; text-transform: uppercase; letter-spacing: .08em; }
+  .card.train .number { color: var(--blue); }
+  .card.test .number { color: var(--green); }
+  .card.val .number { color: var(--pink); }
+  .card.total .number { color: var(--orange); }
+
+  .section { margin-bottom: 3rem; }
+  .section h2 {
+    font-size: 1.3rem; font-weight: 700; margin-bottom: 1.2rem;
+    padding-bottom: .5rem; border-bottom: 2px solid var(--border);
+  }
+
+  .charts-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    gap: 1.5rem; margin-bottom: 2rem;
+  }
+  .chart-box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 1.5rem;
+  }
+  .chart-box h3 { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; color: var(--text2); }
+  canvas { max-height: 320px; }
+
+  table {
+    width: 100%; border-collapse: collapse;
+    background: var(--surface); border-radius: 12px;
+    overflow: hidden; border: 1px solid var(--border);
+  }
+  thead th {
+    background: var(--surface2); padding: .8rem 1rem;
+    font-size: .78rem; text-transform: uppercase; letter-spacing: .06em;
+    color: var(--text2); text-align: left; font-weight: 600;
+  }
+  thead th:not(:first-child) { text-align: right; }
+  tbody td {
+    padding: .65rem 1rem; border-top: 1px solid var(--border); font-size: .88rem;
+  }
+  tbody td:not(:first-child) { text-align: right; font-variant-numeric: tabular-nums; }
+  tbody tr:hover { background: rgba(245,158,66,.06); }
+  .pct { color: var(--text2); font-size: .78rem; }
+
+  .compare-section { margin-bottom: 3rem; }
+  .compare-section h2 { color: var(--accent4); }
+
+  .diff-table { margin-top: 1rem; }
+  .diff-table .pos { color: var(--green); }
+  .diff-table .neg { color: var(--accent3); }
+  .diff-table .neutral { color: var(--text2); }
+
+  .footer {
+    text-align: center; color: var(--text2); font-size: .8rem;
+    margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--border);
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Hypothetical Split — All 25,433 Questions</h1>
+  <p>What if we used <strong>every</strong> question instead of sampling 20,000? &bull; 70 / 20 / 10 stratified split</p>
+</div>
+
+<div style="text-align:center;">
+  <div class="hypo-badge">
+    HYPOTHETICAL — These splits were NOT saved as files. For comparison purposes only.
+  </div>
+</div>
+
+<div class="summary-cards">
+  <div class="card train">
+    <div class="number">17,694</div>
+    <div class="label">Training (69.6%)</div>
+  </div>
+  <div class="card test">
+    <div class="number">5,133</div>
+    <div class="label">Test (20.2%)</div>
+  </div>
+  <div class="card val">
+    <div class="number">2,606</div>
+    <div class="label">Validation (10.2%)</div>
+  </div>
+  <div class="card total">
+    <div class="number">25,433</div>
+    <div class="label">Total (All Data)</div>
+  </div>
+</div>
+
+<!-- CHARTS -->
+<div class="section">
+  <h2>Distribution Visualizations</h2>
+  <div class="charts-row">
+    <div class="chart-box">
+      <h3>Difficulty Level — Across Splits</h3>
+      <canvas id="diffChart"></canvas>
+    </div>
+    <div class="chart-box">
+      <h3>Question Type — Across Splits</h3>
+      <canvas id="qtypeChart"></canvas>
+    </div>
+  </div>
+  <div class="charts-row">
+    <div class="chart-box">
+      <h3>Top 12 Topics — Stacked Across Splits</h3>
+      <canvas id="topicChart"></canvas>
+    </div>
+    <div class="chart-box">
+      <h3>Split Proportions</h3>
+      <canvas id="splitPie"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- DIFFICULTY TABLE -->
+<div class="section">
+  <h2>Difficulty Level Distribution</h2>
+  <table>
+    <thead><tr><th>Level</th><th>Train</th><th>%</th><th>Test</th><th>%</th><th>Validation</th><th>%</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>4,081</td><td class="pct">23.1%</td><td>1,179</td><td class="pct">23.0%</td><td>603</td><td class="pct">23.1%</td></tr>
+      <tr><td>2</td><td>4,694</td><td class="pct">26.5%</td><td>1,365</td><td class="pct">26.6%</td><td>694</td><td class="pct">26.6%</td></tr>
+      <tr><td>3</td><td>5,070</td><td class="pct">28.7%</td><td>1,487</td><td class="pct">29.0%</td><td>760</td><td class="pct">29.2%</td></tr>
+      <tr><td>4</td><td>2,925</td><td class="pct">16.5%</td><td>858</td><td class="pct">16.7%</td><td>430</td><td class="pct">16.5%</td></tr>
+      <tr><td>5</td><td>906</td><td class="pct">5.1%</td><td>242</td><td class="pct">4.7%</td><td>119</td><td class="pct">4.6%</td></tr>
+      <tr><td>FAILED / Empty</td><td>18</td><td class="pct">0.1%</td><td>2</td><td class="pct">0.0%</td><td>0</td><td class="pct">0.0%</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- QUESTION TYPE TABLE -->
+<div class="section">
+  <h2>Question Type Distribution</h2>
+  <table>
+    <thead><tr><th>Type</th><th>Train</th><th>%</th><th>Test</th><th>%</th><th>Validation</th><th>%</th></tr></thead>
+    <tbody>
+      <tr><td>Subjective (Short Answer)</td><td>7,944</td><td class="pct">44.9%</td><td>2,309</td><td class="pct">45.0%</td><td>1,182</td><td class="pct">45.4%</td></tr>
+      <tr><td>Numerical Answer</td><td>4,665</td><td class="pct">26.4%</td><td>1,355</td><td class="pct">26.4%</td><td>691</td><td class="pct">26.5%</td></tr>
+      <tr><td>Single Correct MCQ</td><td>3,412</td><td class="pct">19.3%</td><td>990</td><td class="pct">19.3%</td><td>503</td><td class="pct">19.3%</td></tr>
+      <tr><td>Subjective (Long Answer)</td><td>1,377</td><td class="pct">7.8%</td><td>401</td><td class="pct">7.8%</td><td>186</td><td class="pct">7.1%</td></tr>
+      <tr><td>Multiple Correct MCQ</td><td>163</td><td class="pct">0.9%</td><td>52</td><td class="pct">1.0%</td><td>31</td><td class="pct">1.2%</td></tr>
+      <tr><td>Assertion-Reason</td><td>60</td><td class="pct">0.3%</td><td>15</td><td class="pct">0.3%</td><td>9</td><td class="pct">0.3%</td></tr>
+      <tr><td>Other</td><td>39</td><td class="pct">0.2%</td><td>7</td><td class="pct">0.1%</td><td>3</td><td class="pct">0.1%</td></tr>
+      <tr><td>True/False</td><td>15</td><td class="pct">0.1%</td><td>3</td><td class="pct">0.1%</td><td>1</td><td class="pct">0.0%</td></tr>
+      <tr><td>FAILED</td><td>19</td><td class="pct">0.1%</td><td>1</td><td class="pct">0.0%</td><td>0</td><td class="pct">0.0%</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- TOP TOPICS TABLE -->
+<div class="section">
+  <h2>Top 15 Topics Distribution</h2>
+  <table>
+    <thead><tr><th>Topic</th><th>Train</th><th>%</th><th>Test</th><th>%</th><th>Validation</th><th>%</th></tr></thead>
+    <tbody>
+      <tr><td>Atoms and Nuclei</td><td>1,791</td><td class="pct">10.1%</td><td>517</td><td class="pct">10.1%</td><td>257</td><td class="pct">9.9%</td></tr>
+      <tr><td>Electrostatics</td><td>1,556</td><td class="pct">8.8%</td><td>446</td><td class="pct">8.7%</td><td>224</td><td class="pct">8.6%</td></tr>
+      <tr><td>Magnetic Effects of Current</td><td>1,164</td><td class="pct">6.6%</td><td>334</td><td class="pct">6.5%</td><td>165</td><td class="pct">6.3%</td></tr>
+      <tr><td>Optics</td><td>1,148</td><td class="pct">6.5%</td><td>328</td><td class="pct">6.4%</td><td>164</td><td class="pct">6.3%</td></tr>
+      <tr><td>Properties of Solids and Liquids</td><td>1,053</td><td class="pct">6.0%</td><td>301</td><td class="pct">5.9%</td><td>148</td><td class="pct">5.7%</td></tr>
+      <tr><td>Kinematics</td><td>895</td><td class="pct">5.1%</td><td>258</td><td class="pct">5.0%</td><td>131</td><td class="pct">5.0%</td></tr>
+      <tr><td>Current Electricity</td><td>584</td><td class="pct">3.3%</td><td>165</td><td class="pct">3.2%</td><td>85</td><td class="pct">3.3%</td></tr>
+      <tr><td>Thermodynamics</td><td>455</td><td class="pct">2.6%</td><td>131</td><td class="pct">2.6%</td><td>67</td><td class="pct">2.6%</td></tr>
+      <tr><td>Waves</td><td>428</td><td class="pct">2.4%</td><td>123</td><td class="pct">2.4%</td><td>63</td><td class="pct">2.4%</td></tr>
+      <tr><td>Dual Nature of Matter and Radiation</td><td>393</td><td class="pct">2.2%</td><td>113</td><td class="pct">2.2%</td><td>58</td><td class="pct">2.2%</td></tr>
+      <tr><td>Alternating Current</td><td>385</td><td class="pct">2.2%</td><td>111</td><td class="pct">2.2%</td><td>55</td><td class="pct">2.1%</td></tr>
+      <tr><td>Rotational Motion</td><td>364</td><td class="pct">2.1%</td><td>107</td><td class="pct">2.1%</td><td>54</td><td class="pct">2.1%</td></tr>
+      <tr><td>Electromagnetic Waves</td><td>347</td><td class="pct">2.0%</td><td>102</td><td class="pct">2.0%</td><td>50</td><td class="pct">1.9%</td></tr>
+      <tr><td>Gravitation</td><td>346</td><td class="pct">2.0%</td><td>102</td><td class="pct">2.0%</td><td>53</td><td class="pct">2.0%</td></tr>
+      <tr><td>Kinetic Theory of Gases</td><td>343</td><td class="pct">1.9%</td><td>99</td><td class="pct">1.9%</td><td>53</td><td class="pct">2.0%</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- COMPARISON: 20K vs 25K -->
+<div class="compare-section">
+  <h2>📊 Comparison: 20,000 Sampled vs 25,433 Full</h2>
+  <table class="diff-table">
+    <thead>
+      <tr><th>Metric</th><th>20K (Actual)</th><th>25K (Hypothetical)</th><th>Difference</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Total Questions</strong></td><td>20,000</td><td>25,433</td><td class="pos">+5,433 (+27.2%)</td></tr>
+      <tr><td colspan="4" style="padding:.3rem;border:none;"></td></tr>
+      <tr><td><strong>Train</strong></td><td>13,931</td><td>17,694</td><td class="pos">+3,763</td></tr>
+      <tr><td><strong>Test</strong></td><td>4,114</td><td>5,133</td><td class="pos">+1,019</td></tr>
+      <tr><td><strong>Validation</strong></td><td>1,955</td><td>2,606</td><td class="pos">+651</td></tr>
+      <tr><td colspan="4" style="padding:.3rem;border:none;"></td></tr>
+      <tr><td><strong>Unique Topics (Train)</strong></td><td>751</td><td>759</td><td class="pos">+8</td></tr>
+      <tr><td><strong>Unique Topics (Test)</strong></td><td>288</td><td>293</td><td class="pos">+5</td></tr>
+      <tr><td><strong>Unique Topics (Val)</strong></td><td>160</td><td>201</td><td class="pos">+41</td></tr>
+      <tr><td colspan="4" style="padding:.3rem;border:none;"></td></tr>
+      <tr><td><strong>Difficulty balance (max variance)</strong></td><td>~1.0%</td><td>~0.5%</td><td class="pos">Better with more data</td></tr>
+      <tr><td><strong>Question type balance (max variance)</strong></td><td>~1.0%</td><td>~0.5%</td><td class="pos">Better with more data</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- KEY OBSERVATIONS -->
+<div class="section">
+  <h2>Key Observations</h2>
+  <table>
+    <thead><tr><th>Observation</th><th>Detail</th></tr></thead>
+    <tbody>
+      <tr><td>More training data</td><td>25K gives <strong>3,763 more</strong> training examples — a 27% increase which generally improves model performance</td></tr>
+      <tr><td>Better validation coverage</td><td>Validation grows from 1,955 → 2,606 questions and covers <strong>41 more topics</strong> (160 → 201), giving more reliable eval metrics</td></tr>
+      <tr><td>Proportions stay stable</td><td>Difficulty and question type distributions are virtually identical — the extra 5,433 questions mirror the existing distribution</td></tr>
+      <tr><td>Marginal improvement in balance</td><td>With 27% more data, each stratum has more members, so the stratified split achieves tighter proportional matching (~0.5% vs ~1.0% max variance)</td></tr>
+      <tr><td>FAILED/empty rows</td><td>20 noisy rows exist in both scenarios — same count, same impact (0.1% of total). The 20K sampling did NOT selectively remove them</td></tr>
+      <tr><td>Trade-off</td><td>The 20K sampling trades ~5,400 questions for slightly <em>more balanced</em> strata by allowing under-represented groups to be proportionally boosted, though the effect is marginal here since the data is naturally well-distributed</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="footer">
+  Hypothetical analysis based on <strong>final_merged.csv</strong> (25,433 questions) &bull;
+  70/20/10 stratified split on topic × difficulty × question_type &bull;
+  Seed: 42 &bull;
+  <strong>No files were saved for this hypothetical split</strong>
+</div>
+
+<script>
+const BLUE = '#4ea8de', GREEN = '#00d4aa', PINK = '#ff6b8a';
+
+new Chart(document.getElementById('diffChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Level 1', 'Level 2', 'Level 3', 'Level 4', 'Level 5'],
+    datasets: [
+      { label: 'Train %', data: [23.1,26.5,28.7,16.5,5.1], backgroundColor: BLUE+'99', borderColor: BLUE, borderWidth: 1 },
+      { label: 'Test %',  data: [23.0,26.6,29.0,16.7,4.7], backgroundColor: GREEN+'99', borderColor: GREEN, borderWidth: 1 },
+      { label: 'Val %',   data: [23.1,26.6,29.2,16.5,4.6], backgroundColor: PINK+'99', borderColor: PINK, borderWidth: 1 },
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { labels: { color: '#9498ae' } } },
+    scales: {
+      x: { ticks: { color: '#9498ae' }, grid: { color: '#2a2a2a' } },
+      y: { ticks: { color: '#9498ae', callback: v => v+'%' }, grid: { color: '#2a2a2a' } }
+    }
+  }
+});
+
+new Chart(document.getElementById('qtypeChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Short Subj.', 'Numerical', 'MCQ', 'Long Subj.', 'Multi MCQ', 'Assert.', 'Other'],
+    datasets: [
+      { label: 'Train %', data: [44.9,26.4,19.3,7.8,0.9,0.3,0.2], backgroundColor: BLUE+'99', borderColor: BLUE, borderWidth: 1 },
+      { label: 'Test %',  data: [45.0,26.4,19.3,7.8,1.0,0.3,0.1], backgroundColor: GREEN+'99', borderColor: GREEN, borderWidth: 1 },
+      { label: 'Val %',   data: [45.4,26.5,19.3,7.1,1.2,0.3,0.1], backgroundColor: PINK+'99', borderColor: PINK, borderWidth: 1 },
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { labels: { color: '#9498ae' } } },
+    scales: {
+      x: { ticks: { color: '#9498ae', maxRotation: 45 }, grid: { color: '#2a2a2a' } },
+      y: { ticks: { color: '#9498ae', callback: v => v+'%' }, grid: { color: '#2a2a2a' } }
+    }
+  }
+});
+
+new Chart(document.getElementById('topicChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Atoms', 'Electrostatics', 'Mag. Effects', 'Optics', 'Solids/Liq.', 'Kinematics',
+             'Current Elec.', 'Thermo.', 'Waves', 'Dual Nature', 'AC', 'Rotation'],
+    datasets: [
+      { label: 'Train', data: [1791,1556,1164,1148,1053,895,584,455,428,393,385,364], backgroundColor: BLUE+'99', borderColor: BLUE, borderWidth: 1 },
+      { label: 'Test',  data: [517,446,334,328,301,258,165,131,123,113,111,107], backgroundColor: GREEN+'99', borderColor: GREEN, borderWidth: 1 },
+      { label: 'Val',   data: [257,224,165,164,148,131,85,67,63,58,55,54], backgroundColor: PINK+'99', borderColor: PINK, borderWidth: 1 },
+    ]
+  },
+  options: {
+    responsive: true, indexAxis: 'y',
+    plugins: { legend: { labels: { color: '#9498ae' } } },
+    scales: {
+      x: { ticks: { color: '#9498ae' }, grid: { color: '#2a2a2a' }, stacked: true },
+      y: { ticks: { color: '#9498ae', font: { size: 10 } }, grid: { color: '#2a2a2a' }, stacked: true }
+    }
+  }
+});
+
+new Chart(document.getElementById('splitPie'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Train (17,694)', 'Test (5,133)', 'Validation (2,606)'],
+    datasets: [{
+      data: [17694, 5133, 2606],
+      backgroundColor: [BLUE+'cc', GREEN+'cc', PINK+'cc'],
+      borderColor: ['#000','#000','#000'], borderWidth: 3
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { position: 'bottom', labels: { color: '#9498ae', padding: 16, font: { size: 13 } } } },
+    cutout: '55%'
+  }
+});
+</script>
+</body>
+</html>
